@@ -1,2 +1,2 @@
 # FormData
-formData support where window.FormData is undefined
+FormData support where window.FormData is undefined
