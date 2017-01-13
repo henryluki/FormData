@@ -1,1 +1,1 @@
-coffee -cb -o ../ formdata.coffee 
+coffee -cb -wo ../ formdata.coffee
