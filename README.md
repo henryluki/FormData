@@ -34,9 +34,9 @@ use XMLHttpRequest.
   xhr.open("POST", "");
 
   if (formData.polyfill) {
+      xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary=" + formData.boundary)
       // formData.toString() returns Promise
       formData.toString().then(function(data){
-          xhr.setRequestHeader("Content-Type", "multipart/form-data" + formData.boundary)
           xhr.send(data);
       })
   } else {
