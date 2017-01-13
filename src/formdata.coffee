@@ -3,6 +3,8 @@
   if self.FormData
     return
 
+  Promise = require('promise-polyfill')
+
   support =
     arrayBuffer: 'ArrayBuff' in self,
     blob: 'FileReader' in self && 'Blob' in self && (()->
@@ -19,38 +21,52 @@
     constructor: (@name, @value)->
 
     convertToString: ()->
-      s = []
-      s.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
-      s.push("#{@value}#{LF}")
-      s.join('')
+      new Promise((resolve)->
+        s = []
+        s.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
+        s.push("#{@value}#{LF}")
+        resolve(s.join(''))
+      )
 
   class BlobPart
     constructor: (@name, @filename, @souce)->
 
     _readArrayBufferAsString: (buff)->
-      view = new Uint8Array(buf)
+      view = new Uint8Array(buff)
       view.reduce((acc, b)->
         acc.push(String.fromCharCode(b))
         acc
       , new Array(view.length)).join('')
 
     _readBlobAsArrayBuffer: ()->
-      reader = new FileReader()
-      reader.readAsArrayBuffer(@souce)
-      @_readArrayBufferAsString(reader.result)
+      self = @
+      new Promise((resolve)->
+        reader = new FileReader()
+        reader.readAsArrayBuffer(self.souce)
+        reader.onload = ()->
+          resolve(self._readArrayBufferAsString(reader.result))
+      )
 
     _readBlobAsBinary: ()->
-      @souce.getAsBinary()
+      new Promise((resolve)->
+        resolve(@souce.getAsBinary())
+      )
 
     convertToString: ()->
       s = []
       s.push("Content-Disposition: form-data; name=#{@name}; filename=#{@filename}#{LF}")
       s.push("Content-Type: #{@souce.type}#{LF}#{LF}")
+
       if support.blob && support.arrayBuffer
-        s.push(@_readBlobAsArrayBuffer() + LF)
+        @_readBlobAsArrayBuffer().then((strings)->
+          s.push(strings + LF)
+          s.join('')
+        )
       else
-        s.push(@_readBlobAsBinary() + LF)
-      s.join('')
+        @_readBlobAsBinary().then((strings)->
+          s.push(strings + LF)
+          s.join('')
+        )
 
   class FormData
     constructor: ->
@@ -72,15 +88,22 @@
 
     toString: ()->
       boundary = @boundary
-      @_parts.reduce((acc, part) ->
-        acc.push("--" + boundary + "\r\n")
-        if part instanceof StringPart
-          acc.push(part.convertToString())
-        if part instanceof BlobPart
-          acc.push(part.convertToString())
-        acc.push("--" + boundary + "--")
-        acc
-      , []).join('')
+      lines = []
+      parts = @_parts
+      new Promise((resolve)->
+        parts.reduce((promise, part) ->
+          promise.then((line)->
+            part.convertToString().then((strings)->
+              lines.push("--#{boundary}#{LF}")
+              lines.push(strings)
+              lines
+            )
+          )
+        , new Promise()).join('')
+      ).then((lines)->
+        lines.push("--#{boundary}--")
+        lines.join('')
+      )
 
   self.FormData = FormData
 

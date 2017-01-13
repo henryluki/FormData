@@ -2,10 +2,11 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 (function(self) {
-  var BlobPart, FormData, LF, StringPart, support;
+  var BlobPart, FormData, LF, Promise, StringPart, support;
   if (self.FormData) {
     return;
   }
+  Promise = require('promise-polyfill');
   support = {
     arrayBuffer: __indexOf.call(self, 'ArrayBuff') >= 0,
     blob: __indexOf.call(self, 'FileReader') >= 0 && __indexOf.call(self, 'Blob') >= 0 && (function() {
@@ -25,11 +26,13 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     }
 
     StringPart.prototype.convertToString = function() {
-      var s;
-      s = [];
-      s.push("Content-Disposition: form-data; name=" + this.name + ";" + LF + LF);
-      s.push("" + this.value + LF);
-      return s.join('');
+      return new Promise(function(resolve) {
+        var s;
+        s = [];
+        s.push("Content-Disposition: form-data; name=" + this.name + ";" + LF + LF);
+        s.push("" + this.value + LF);
+        return resolve(s.join(''));
+      });
     };
 
     return StringPart;
@@ -44,7 +47,7 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
 
     BlobPart.prototype._readArrayBufferAsString = function(buff) {
       var view;
-      view = new Uint8Array(buf);
+      view = new Uint8Array(buff);
       return view.reduce(function(acc, b) {
         acc.push(String.fromCharCode(b));
         return acc;
@@ -52,16 +55,21 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     };
 
     BlobPart.prototype._readBlobAsArrayBuffer = function() {
-      var reader;
-      reader = new FileReader();
-      reader.readAsArrayBuffer(this.souce);
-      return reader.onload = function() {
-        return this._readArrayBufferAsString(reader.result);
-      };
+      self = this;
+      return new Promise(function(resolve) {
+        var reader;
+        reader = new FileReader();
+        reader.readAsArrayBuffer(self.souce);
+        return reader.onload = function() {
+          return resolve(self._readArrayBufferAsString(reader.result));
+        };
+      });
     };
 
     BlobPart.prototype._readBlobAsBinary = function() {
-      return this.souce.getAsBinary();
+      return new Promise(function(resolve) {
+        return resolve(this.souce.getAsBinary());
+      });
     };
 
     BlobPart.prototype.convertToString = function() {
@@ -70,11 +78,16 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
       s.push("Content-Disposition: form-data; name=" + this.name + "; filename=" + this.filename + LF);
       s.push("Content-Type: " + this.souce.type + LF + LF);
       if (support.blob && support.arrayBuffer) {
-        s.push(this._readBlobAsArrayBuffer() + LF);
+        return this._readBlobAsArrayBuffer().then(function(strings) {
+          s.push(strings + LF);
+          return s.join('');
+        });
       } else {
-        s.push(this._readBlobAsBinary() + LF);
+        return this._readBlobAsBinary().then(function(strings) {
+          s.push(strings + LF);
+          return s.join('');
+        });
       }
-      return s.join('');
     };
 
     return BlobPart;
@@ -104,19 +117,24 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     };
 
     FormData.prototype.toString = function() {
-      var boundary;
+      var boundary, lines, parts;
       boundary = this.boundary;
-      return this._parts.reduce(function(acc, part) {
-        acc.push("--" + boundary + "\r\n");
-        if (part instanceof StringPart) {
-          acc.push(part.convertToString());
-        }
-        if (part instanceof BlobPart) {
-          acc.push(part.convertToString());
-        }
-        acc.push("--" + boundary + "--");
-        return acc;
-      }, []).join('');
+      lines = [];
+      parts = this._parts;
+      return new Promise(function(resolve) {
+        return parts.reduce(function(promise, part) {
+          return promise.then(function(line) {
+            return part.convertToString().then(function(strings) {
+              lines.push("--" + boundary + LF);
+              lines.push(strings);
+              return lines;
+            });
+          });
+        }, new Promise()).join('');
+      }).then(function(lines) {
+        lines.push("--" + boundary + "--");
+        return lines.join('');
+      });
     };
 
     return FormData;
