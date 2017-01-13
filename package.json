@@ -1,0 +1,26 @@
+{
+  "name": "formdata",
+  "version": "1.0.0",
+  "description": "FormData support where window.FormData is undefined",
+  "main": "formdata.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henryluki/FormData.git"
+  },
+  "keywords": [
+    "form",
+    "data"
+  ],
+  "author": "henryluki@iamammiracle55@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/henryluki/FormData/issues"
+  },
+  "homepage": "https://github.com/henryluki/FormData#readme",
+  "dependencies": {
+    "promise-polyfill": "^6.0.2"
+  }
+}
