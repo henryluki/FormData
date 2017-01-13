@@ -2,7 +2,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 (function(self) {
-  var BlobPart, FormData, StringPart, support;
+  var BlobPart, FormData, LF, StringPart, support;
   if (self.FormData) {
     return;
   }
@@ -17,6 +17,7 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
       }
     })()
   };
+  LF = "\r\n";
   StringPart = (function() {
     function StringPart(name, value) {
       this.name = name;
@@ -26,8 +27,8 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     StringPart.prototype.convertToString = function() {
       var s;
       s = [];
-      s.push("Content-Disposition: form-data; name=\"" + this.name(+"\";\r\n\r\n"));
-      s.push(this.value + "\r\n");
+      s.push("Content-Disposition: form-data; name=" + this.name + ";" + LF + LF);
+      s.push("" + this.value + LF);
       return s.join('');
     };
 
@@ -66,12 +67,12 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     BlobPart.prototype.convertToString = function() {
       var s;
       s = [];
-      s.push("Content-Disposition: form-data; name=\"" + this.name(+"\"; filename=\"" + this.filename(+"\"\r\n")));
-      s.push("Content-Type: " + this.souce.type(+"\r\n\r\n"));
+      s.push("Content-Disposition: form-data; name=" + this.name + "; filename=" + this.filename + LF);
+      s.push("Content-Type: " + this.souce.type + LF + LF);
       if (support.blob && support.arrayBuffer) {
-        s.push(this._readBlobAsArrayBuffer() + "\r\n");
+        s.push(this._readBlobAsArrayBuffer() + LF);
       } else {
-        s.push(this._readBlobAsBinary() + "\r\n");
+        s.push(this._readBlobAsBinary() + LF);
       }
       return s.join('');
     };

@@ -13,13 +13,15 @@
         return false
     )()
 
+  LF = "\r\n"
+
   class StringPart
     constructor: (@name, @value)->
 
     convertToString: ()->
       s = []
-      s.push("Content-Disposition: form-data; name=\""+ @name +"\";\r\n\r\n")
-      s.push(@value + "\r\n")
+      s.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
+      s.push("#{@value}#{LF}")
       s.join('')
 
   class BlobPart
@@ -43,12 +45,12 @@
 
     convertToString: ()->
       s = []
-      s.push("Content-Disposition: form-data; name=\""+ @name +"\"; filename=\""+ @filename +"\"\r\n")
-      s.push("Content-Type: "+ @souce.type +"\r\n\r\n")
+      s.push("Content-Disposition: form-data; name=#{@name}; filename=#{@filename}#{LF}")
+      s.push("Content-Type: #{@souce.type}#{LF}#{LF}")
       if support.blob && support.arrayBuffer
-        s.push(@_readBlobAsArrayBuffer() + "\r\n")
+        s.push(@_readBlobAsArrayBuffer() + LF)
       else
-        s.push(@_readBlobAsBinary() + "\r\n")
+        s.push(@_readBlobAsBinary() + LF)
       s.join('')
 
   class FormData
