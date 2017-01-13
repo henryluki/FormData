@@ -2,11 +2,10 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 (function(self) {
-  var BlobPart, FormData, LF, Promise, StringPart, support;
+  var BlobPart, FormData, LF, StringPart, support;
   if (self.FormData) {
     return;
   }
-  Promise = require('promise-polyfill');
   support = {
     arrayBuffer: __indexOf.call(self, 'ArrayBuff') >= 0,
     blob: __indexOf.call(self, 'FileReader') >= 0 && __indexOf.call(self, 'Blob') >= 0 && (function() {
@@ -26,13 +25,15 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     }
 
     StringPart.prototype.convertToString = function() {
-      return new Promise(function(resolve) {
-        var s;
-        s = [];
-        s.push("Content-Disposition: form-data; name=" + this.name + ";" + LF + LF);
-        s.push("" + this.value + LF);
-        return resolve(s.join(''));
-      });
+      return new Promise((function(_this) {
+        return function(resolve) {
+          var s;
+          s = [];
+          s.push("Content-Disposition: form-data; name=" + _this.name + ";" + LF + LF);
+          s.push("" + _this.value + LF);
+          return resolve(s.join(''));
+        };
+      })(this));
     };
 
     return StringPart;
@@ -55,21 +56,24 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     };
 
     BlobPart.prototype._readBlobAsArrayBuffer = function() {
-      self = this;
-      return new Promise(function(resolve) {
-        var reader;
-        reader = new FileReader();
-        reader.readAsArrayBuffer(self.souce);
-        return reader.onload = function() {
-          return resolve(self._readArrayBufferAsString(reader.result));
+      return new Promise((function(_this) {
+        return function(resolve) {
+          var reader;
+          reader = new FileReader();
+          reader.readAsArrayBuffer(_this.souce);
+          return reader.onload = function() {
+            return resolve(_this._readArrayBufferAsString(reader.result));
+          };
         };
-      });
+      })(this));
     };
 
     BlobPart.prototype._readBlobAsBinary = function() {
-      return new Promise(function(resolve) {
-        return resolve(this.souce.getAsBinary());
-      });
+      return new Promise((function(_this) {
+        return function(resolve) {
+          return resolve(_this.souce.getAsBinary());
+        };
+      })(this));
     };
 
     BlobPart.prototype.convertToString = function() {

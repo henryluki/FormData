@@ -20,7 +20,7 @@
     "url": "https://github.com/henryluki/FormData/issues"
   },
   "homepage": "https://github.com/henryluki/FormData#readme",
-  "dependencies": {
+  "devDependencies": {
     "promise-polyfill": "^6.0.2"
   }
 }

@@ -3,8 +3,6 @@
   if self.FormData
     return
 
-  Promise = require('promise-polyfill')
-
   support =
     arrayBuffer: 'ArrayBuff' in self,
     blob: 'FileReader' in self && 'Blob' in self && (()->
