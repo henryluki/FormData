@@ -27,7 +27,10 @@ var handleOnclick = function(){
             xhr.setRequestHeader("Content-Type", "multipart/form-data" + formData.boundary)
             xhr.send(data);
         })
+    } else {
+        xhr.send(formData);
     }
+
 }
 </script>
 </body>
