@@ -44,7 +44,7 @@ use XMLHttpRequest.
 
 See examples in [examples](https://github.com/henryluki/FormData/tree/master/examples) directory
 
-## Thanks
+## Reference
 
 This project was inspired by these good projects
 
