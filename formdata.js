@@ -31,7 +31,7 @@
           lines.push("--" + BOUNDARY + LF);
           lines.push("Content-Disposition: form-data; name=" + _this.name + ";" + LF + LF);
           lines.push("" + _this.value + LF);
-          return resolve(lines);
+          return resolve(lines.join(''));
         };
       })(this));
     };
@@ -85,12 +85,12 @@
       if (support.blob && support.arrayBuffer) {
         return this._readBlobAsArrayBuffer().then(function(strings) {
           lines.push(strings + LF);
-          return lines;
+          return lines.join('');
         });
       } else {
         return this._readBlobAsBinary().then(function(strings) {
           lines.push(strings + LF);
-          return lines;
+          return lines.join('');
         });
       }
     };
@@ -128,10 +128,7 @@
         return part.convertToString();
       })).then(function(lines) {
         lines.push("--" + BOUNDARY + "--");
-        return lines.reduce(function(acc, line) {
-          acc = acc.concat(line);
-          return acc;
-        }, []).join('');
+        return lines.join('');
       });
     };
 

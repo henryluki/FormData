@@ -25,7 +25,7 @@
         lines.push("--#{BOUNDARY}#{LF}")
         lines.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
         lines.push("#{@value}#{LF}")
-        resolve(lines)
+        resolve(lines.join(''))
       )
 
   class BlobPart
@@ -60,12 +60,12 @@
       if support.blob && support.arrayBuffer
         @_readBlobAsArrayBuffer().then((strings)->
           lines.push(strings + LF)
-          lines
+          lines.join('')
         )
       else
         @_readBlobAsBinary().then((strings)->
           lines.push(strings + LF)
-          lines
+          lines.join('')
         )
 
   class FormData
@@ -92,10 +92,7 @@
         @_parts.map((part)-> part.convertToString())
       ).then((lines)->
         lines.push("--#{BOUNDARY}--")
-        lines.reduce((acc, line)->
-          acc = acc.concat(line)
-          return acc
-        []).join('')
+        lines.join('')
       )
 
   self.FormData = FormData
