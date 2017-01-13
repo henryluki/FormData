@@ -7,6 +7,11 @@ This is project was inspired by [html5-formdata](https://github.com/francois2met
 
 But unlike **html5-formdata**, it supports `Blob`  and use `FileReader` and `ArrayBuffer` to convert `Blob` to string.
 
+## NPM Use
+```
+npm install formdata-emulate
+```
+
 ## How to use it ?
 
 import *formdata.js*:
