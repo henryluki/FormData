@@ -1,5 +1,5 @@
 {
-  "name": "formdata",
+  "name": "formdata-emulate",
   "version": "1.0.0",
   "description": "FormData support where window.FormData is undefined",
   "main": "formdata.js",
