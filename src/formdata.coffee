@@ -37,7 +37,7 @@
     _readBlobAsArrayBuffer: ()->
       reader = new FileReader()
       reader.readAsArrayBuffer(@souce)
-      reader.onload = ()->
+      reader.onload = ()=>
         @_readArrayBufferAsString(reader.result)
 
     _readBlobAsBinary: ()->
