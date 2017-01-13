@@ -79,7 +79,7 @@
       if typeof value == "string"
         part = new StringPart(key, value)
       else if value instanceof Blob
-        part = new BlobPart(key, value.name, value)
+        part = new BlobPart(key, value.name || "blob", value)
       else
         part = new StringPart(key, value)
       if part
