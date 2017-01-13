@@ -21,7 +21,7 @@
     constructor: (@name, @value)->
 
     convertToString: ()->
-      new Promise((resolve)->
+      new Promise((resolve)=>
         s = []
         s.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
         s.push("#{@value}#{LF}")
@@ -39,16 +39,15 @@
       , new Array(view.length)).join('')
 
     _readBlobAsArrayBuffer: ()->
-      self = @
-      new Promise((resolve)->
+      new Promise((resolve)=>
         reader = new FileReader()
-        reader.readAsArrayBuffer(self.souce)
-        reader.onload = ()->
-          resolve(self._readArrayBufferAsString(reader.result))
+        reader.readAsArrayBuffer(@souce)
+        reader.onload = ()=>
+          resolve(@_readArrayBufferAsString(reader.result))
       )
 
     _readBlobAsBinary: ()->
-      new Promise((resolve)->
+      new Promise((resolve)=>
         resolve(@souce.getAsBinary())
       )
 
