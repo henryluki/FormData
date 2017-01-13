@@ -4,8 +4,8 @@
     return
 
   support =
-    arrayBuffer: 'ArrayBuff' in self,
-    blob: 'FileReader' in self && 'Blob' in self && (()->
+    arrayBuffer: !!self.ArrayBuffer,
+    blob: !!self.FileReader && !!self.Blob && (()->
       try
         new Blob()
         return true
@@ -14,16 +14,18 @@
     )()
 
   LF = "\r\n"
+  BOUNDARY = "--------FormData" + Math.random()
 
   class StringPart
     constructor: (@name, @value)->
 
     convertToString: ()->
+      lines = []
       new Promise((resolve)=>
-        s = []
-        s.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
-        s.push("#{@value}#{LF}")
-        resolve(s.join(''))
+        lines.push("--#{BOUNDARY}#{LF}")
+        lines.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
+        lines.push("#{@value}#{LF}")
+        resolve(lines)
       )
 
   class BlobPart
@@ -50,26 +52,27 @@
       )
 
     convertToString: ()->
-      s = []
-      s.push("Content-Disposition: form-data; name=#{@name}; filename=#{@filename}#{LF}")
-      s.push("Content-Type: #{@souce.type}#{LF}#{LF}")
+      lines = []
+      lines.push("--#{BOUNDARY}#{LF}")
+      lines.push("Content-Disposition: form-data; name=#{@name}; filename=#{@filename}#{LF}")
+      lines.push("Content-Type: #{@souce.type}#{LF}#{LF}")
 
       if support.blob && support.arrayBuffer
         @_readBlobAsArrayBuffer().then((strings)->
-          s.push(strings + LF)
-          s.join('')
+          lines.push(strings + LF)
+          lines
         )
       else
         @_readBlobAsBinary().then((strings)->
-          s.push(strings + LF)
-          s.join('')
+          lines.push(strings + LF)
+          lines
         )
 
   class FormData
     constructor: ->
       @polyfill = true
       @_parts = []
-      @boundary = "--------FormData" + Math.random()
+      @boundary = BOUNDARY
 
     append: (key, value)->
       part = null
@@ -84,22 +87,15 @@
       @
 
     toString: ()->
-      boundary = @boundary
-      lines = []
       parts = @_parts
-      new Promise((resolve)->
-        parts.reduce((promise, part) ->
-          promise.then((line)->
-            part.convertToString().then((strings)->
-              lines.push("--#{boundary}#{LF}")
-              lines.push(strings)
-              lines
-            )
-          )
-        , new Promise()).join('')
+      Promise.all(
+        @_parts.map((part)-> part.convertToString())
       ).then((lines)->
-        lines.push("--#{boundary}--")
-        lines.join('')
+        lines.push("--#{BOUNDARY}--")
+        lines.reduce((acc, line)->
+          acc = acc.concat(line)
+          return acc
+        []).join('')
       )
 
   self.FormData = FormData
