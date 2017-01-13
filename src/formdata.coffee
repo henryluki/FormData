@@ -23,7 +23,7 @@
       lines = []
       new Promise((resolve)=>
         lines.push("--#{BOUNDARY}#{LF}")
-        lines.push("Content-Disposition: form-data; name=#{@name};#{LF}#{LF}")
+        lines.push("Content-Disposition: form-data; name=\"#{@name}\";#{LF}#{LF}")
         lines.push("#{@value}#{LF}")
         resolve(lines.join(''))
       )
@@ -54,7 +54,7 @@
     convertToString: ()->
       lines = []
       lines.push("--#{BOUNDARY}#{LF}")
-      lines.push("Content-Disposition: form-data; name=#{@name}; filename=#{@filename}#{LF}")
+      lines.push("Content-Disposition: form-data; name=\"#{@name}\"; filename=\"#{@filename}\"#{LF}")
       lines.push("Content-Type: #{@souce.type}#{LF}#{LF}")
 
       if support.blob && support.arrayBuffer

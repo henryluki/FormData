@@ -29,7 +29,7 @@
       return new Promise((function(_this) {
         return function(resolve) {
           lines.push("--" + BOUNDARY + LF);
-          lines.push("Content-Disposition: form-data; name=" + _this.name + ";" + LF + LF);
+          lines.push("Content-Disposition: form-data; name=\"" + _this.name + "\";" + LF + LF);
           lines.push("" + _this.value + LF);
           return resolve(lines.join(''));
         };
@@ -80,7 +80,7 @@
       var lines;
       lines = [];
       lines.push("--" + BOUNDARY + LF);
-      lines.push("Content-Disposition: form-data; name=" + this.name + "; filename=" + this.filename + LF);
+      lines.push("Content-Disposition: form-data; name=\"" + this.name + "\"; filename=\"" + this.filename + "\"" + LF);
       lines.push("Content-Type: " + this.souce.type + LF + LF);
       if (support.blob && support.arrayBuffer) {
         return this._readBlobAsArrayBuffer().then(function(strings) {
