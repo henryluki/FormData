@@ -2,7 +2,7 @@
 var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 (function(self) {
-  var FilePart, FormData, StringPart, support;
+  var BlobPart, FormData, StringPart, support;
   if (self.FormData) {
     return;
   }
@@ -23,17 +23,60 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
       this.value = value;
     }
 
+    StringPart.prototype.convertToString = function() {
+      var s;
+      s = [];
+      s.push("Content-Disposition: form-data; name=\"" + this.name(+"\";\r\n\r\n"));
+      s.push(this.value + "\r\n");
+      return s.join('');
+    };
+
     return StringPart;
 
   })();
-  FilePart = (function() {
-    function FilePart(name, filename, souce) {
+  BlobPart = (function() {
+    function BlobPart(name, filename, souce) {
       this.name = name;
       this.filename = filename;
       this.souce = souce;
     }
 
-    return FilePart;
+    BlobPart.prototype._readArrayBufferAsString = function(buff) {
+      var view;
+      view = new Uint8Array(buf);
+      return view.reduce(function(acc, b) {
+        acc.push(String.fromCharCode(b));
+        return acc;
+      }, new Array(view.length)).join('');
+    };
+
+    BlobPart.prototype._readBlobAsArrayBuffer = function() {
+      var reader;
+      reader = new FileReader();
+      reader.readAsArrayBuffer(this.souce);
+      return reader.onload = function() {
+        return this._readArrayBufferAsString(reader.result);
+      };
+    };
+
+    BlobPart.prototype._readBlobAsBinary = function() {
+      return this.souce.getAsBinary();
+    };
+
+    BlobPart.prototype.convertToString = function() {
+      var s;
+      s = [];
+      s.push("Content-Disposition: form-data; name=\"" + this.name(+"\"; filename=\"" + this.filename(+"\"\r\n")));
+      s.push("Content-Type: " + this.souce.type(+"\r\n\r\n"));
+      if (support.blob && support.arrayBuffer) {
+        s.push(this._readBlobAsArrayBuffer() + "\r\n");
+      } else {
+        s.push(this._readBlobAsBinary() + "\r\n");
+      }
+      return s.join('');
+    };
+
+    return BlobPart;
 
   })();
   FormData = (function() {
@@ -44,12 +87,19 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
     }
 
     FormData.prototype.append = function(key, value) {
-      part;
       var part;
+      part = null;
       if (typeof value === "string") {
         part = new StringPart(key, value);
+      } else if (value instanceof Blob) {
+        part = new BlobPart(key, value.name, value);
+      } else {
+        part = new StringPart(key, value);
       }
-      return this._parts.push(part);
+      if (part) {
+        this._parts.push(part);
+      }
+      return this;
     };
 
     FormData.prototype.toString = function() {
@@ -58,8 +108,10 @@ var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; 
       return this._parts.reduce(function(acc, part) {
         acc.push("--" + boundary + "\r\n");
         if (part instanceof StringPart) {
-          acc.push("Content-Disposition: form-data; name=\"" + part.name(+"\";\r\n\r\n"));
-          acc.push(part.value + "\r\n");
+          acc.push(part.convertToString());
+        }
+        if (part instanceof BlobPart) {
+          acc.push(part.convertToString());
         }
         acc.push("--" + boundary + "--");
         return acc;
