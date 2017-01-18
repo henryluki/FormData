@@ -44,6 +44,31 @@ use XMLHttpRequest.
       xhr.send(formData);
   }
 ```
+use with *fetch*.
+
+```javascript
+var postData = function(formData){
+    if (formData.polyfill) {
+        return formData.toString().then(function(data){
+            return fetch("", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "multipart/form-data; boundary=" + formData.boundary
+                },
+                body: data
+            })
+        })
+    } else {
+       return fetch("", {
+            method: "POST",
+            body: datda
+       })
+    }
+}
+postData(formData).then(function(res){
+  console.log(res)
+});
+```
 
 ## Examples
 
