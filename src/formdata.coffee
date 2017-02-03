@@ -74,6 +74,12 @@
       @_parts = []
       @boundary = BOUNDARY
 
+    _stringToTypedArray: (string)->
+      bytes = Array.prototype.map.call(string, (s)->
+        s.charCodeAt(0)
+      )
+      new Uint8Array(bytes)
+
     append: (key, value)->
       part = null
       if typeof value == "string"
@@ -93,7 +99,7 @@
       ).then((lines)->
         lines.push("--#{BOUNDARY}--")
         lines.join('')
-      )
+      ).then(@_stringToTypedArray)
 
   self.FormData = FormData
 

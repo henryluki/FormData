@@ -105,6 +105,14 @@
       this.boundary = BOUNDARY;
     }
 
+    FormData.prototype._stringToTypedArray = function(string) {
+      var bytes;
+      bytes = Array.prototype.map.call(string, function(s) {
+        return s.charCodeAt(0);
+      });
+      return new Uint8Array(bytes);
+    };
+
     FormData.prototype.append = function(key, value) {
       var part;
       part = null;
@@ -129,7 +137,7 @@
       })).then(function(lines) {
         lines.push("--" + BOUNDARY + "--");
         return lines.join('');
-      });
+      }).then(this._stringToTypedArray);
     };
 
     return FormData;
