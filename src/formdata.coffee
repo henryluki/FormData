@@ -13,7 +13,7 @@
         return false
     )()
 
-  LF = "\r\n"
+  CRLF = "\r\n"
   BOUNDARY = "--------FormData" + Math.random()
 
   class StringPart
@@ -22,9 +22,9 @@
     convertToString: ()->
       lines = []
       new Promise((resolve)=>
-        lines.push("--#{BOUNDARY}#{LF}")
-        lines.push("Content-Disposition: form-data; name=\"#{@name}\";#{LF}#{LF}")
-        lines.push("#{@value}#{LF}")
+        lines.push("--#{BOUNDARY}#{CRLF}")
+        lines.push("Content-Disposition: form-data; name=\"#{@name}\";#{CRLF}#{CRLF}")
+        lines.push("#{@value}#{CRLF}")
         resolve(lines.join(''))
       )
 
@@ -53,18 +53,18 @@
 
     convertToString: ()->
       lines = []
-      lines.push("--#{BOUNDARY}#{LF}")
-      lines.push("Content-Disposition: form-data; name=\"#{@name}\"; filename=\"#{@filename}\"#{LF}")
-      lines.push("Content-Type: #{@souce.type}#{LF}#{LF}")
+      lines.push("--#{BOUNDARY}#{CRLF}")
+      lines.push("Content-Disposition: form-data; name=\"#{@name}\"; filename=\"#{@filename}\"#{CRLF}")
+      lines.push("Content-Type: #{@souce.type}#{CRLF}#{CRLF}")
 
       if support.blob && support.arrayBuffer
         @_readBlobAsArrayBuffer().then((strings)->
-          lines.push(strings + LF)
+          lines.push(strings + CRLF)
           lines.join('')
         )
       else
         @_readBlobAsBinary().then((strings)->
-          lines.push(strings + LF)
+          lines.push(strings + CRLF)
           lines.join('')
         )
 
